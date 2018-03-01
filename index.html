@@ -1,0 +1,139 @@
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8" />
+        <title> Airplane Hub</title>
+    </head>
+    
+    <center>
+        <br><br><br><br>
+    <h1><strong>Enter URL for Airlines List JSON File</strong> </h1>   
+    <form name="myform" method="POST" id="location">
+    <input type="text" name="URL" maxlength="100" size="30" />
+    <br><br>
+    <input type="button" name="submit" value="Submit Query" onClick="viewJSON(this.form)" />
+    </form>
+   
+    </center>
+    
+    <body>
+
+        <script>
+            function generateHTML(info){
+
+                        var output='<thead>'+'<tr>';
+                        var HeadLine = info.Mainline.Table.Header.Data;
+                        var ErrorControl = jsonObj.Mainline.Table.Row; 
+                        if(ErrorControl==null || ErrorControl == "")
+                            {
+                                alert("No data!");
+                                return;
+                            }
+                
+                        for(var i = 0; i <= info.Mainline.Table.Header.Data.length-1; i++){
+                            //HeadLine[i]=info.Mainline.Table.Header.Data[i];
+
+                                    output +='<th>'+info.Mainline.Table.Header.Data[i]+'</th>'
+
+                        }
+                        output = output +'</tr>'+'</thead>';
+                        
+                        output = output+'<tbody>';//Body starts!
+                        
+                        for(var i = 0; i <= info.Mainline.Table.Row.length-1; i++){
+                            
+                            var k=0;
+                                    //AirLine
+                                    output +='<tr>'+'<td>'+info.Mainline.Table.Row[i][HeadLine[k]]+'</td>';
+                            
+                            k=k+1;
+                                    //IATA
+                                    output +='<td>'+info.Mainline.Table.Row[i][HeadLine[k]]+'</td>';
+                            k=k+1;
+                                    //Hub
+                                    output +='<td><a style="padding-top:10px;padding-bottom:10px;padding-left:15px;padding-right:15px;">'
+                                    for(var j = 0; j<=info.Mainline.Table.Row[i][HeadLine[k]].Hub.length-1;j++)
+                                        {
+                                            if(j===0){
+                                           output += '<li><strong>'+info.Mainline.Table.Row[i][HeadLine[k]].Hub[j]+'</strong></li>'; 
+                                            }
+                                            else{
+                                                 output += '<li>'+info.Mainline.Table.Row[i][HeadLine[k]].Hub[j]+'</li>'; 
+                                            }
+                                        }
+                                    output +='</a></td>';
+                            k=k+1;
+                                    //Notes
+                                    output +='<td>'+info.Mainline.Table.Row[i][HeadLine[k]]+'</td>';
+                            k=k+1;
+                                    //HomePage
+                                    output +='<td><a href="'+info.Mainline.Table.Row[i][HeadLine[k]]+'">'+info.Mainline.Table.Row[i][HeadLine[k]]+' </a></td>';
+                            k=k+1;
+                                    //Plane
+                                    output +='<td> <img src="'+info.Mainline.Table.Row[i][HeadLine[k]]+'"height="100" width="200"/></td>'+'</tr>';
+
+                        }
+                       output = output +'</tbody>';
+
+          
+                   var update = document.getElementById('TableData');
+                   var mesg=open();
+                    //mesg.innerHTML = output;
+                    //mesg.document.write(update.innerHTML = output);
+                   mesg.document.write("<table border=1>"+output+"</table>");
+
+            }
+
+            //end of function generateHTML
+            
+            function viewJSON(what){ 
+                var URL = what.URL.value; //URL=airline.json
+            if(URL==null || URL == ""){
+                alert("Empty!Please enter data!");
+                return;
+            }
+
+            function loadJSON(url) {
+            
+                if (window.XMLHttpRequest){
+                        request=new XMLHttpRequest();
+                            } else {
+                        request=new ActiveXObject("Microsoft.XMLHTTP"); 
+                        } 
+                
+                        request.open("GET",url,false);
+                        request.send();
+                         if(request.status == 404){
+                            alert("No Files Found! Type again!");
+                        return;
+                        }
+                   
+                        jsonObj = JSON.parse(request.responseText);
+                        return jsonObj; 
+            }
+                    
+                        jsonObj = loadJSON(URL);
+  
+
+                            if (window.ActiveXObject){//if IE, simply execute script (due to async prop). 
+                                 if (jsonObj.parseError.errorCode != 0) {
+                                var myErr = jsonObj.parseError;
+                                generateError(jsonObj);
+                                hWin = window.open("", "Error", "height=300,width=340"); hWin.document.write(html_text);
+                                } 
+                                else { 
+                                    generateHTML(jsonObj);
+                                hWin = window.open("", "Assignment4", "height=800,width=600"); hWin.document.write(html_text); 
+                                }
+                                }
+                         else  { 
+                        generateHTML(jsonObj);
+
+                }
+
+            }
+                    </script>
+
+    </body>
+
+</html>

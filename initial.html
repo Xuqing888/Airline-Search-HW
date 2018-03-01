@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style type="text/css">
+        h1 {
+            position: absolute;
+            left: 28%;
+        }
+        #searchText {
+            position: absolute;
+            margin-top: 100px;
+            left: 25%;
+        }
+        #submit {
+            position: absolute;
+            left: 45%;
+            margin-top: 140px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h1>Enter URL for Airlines List JSON File</h1>
+<form name="myForm" method="post" id="location">
+    <input type="text" name="URL" value="data.json" id="searchText" maxlength="255" size="100">
+    <br>
+    <input type="button" name="submit" value="Submit Query" id="submit" onclick="viewJSON(this.form)">
+</form>
+
+<script>
+    //var html_text;
+    function generateHTML(jsonObj) {
+
+        root = jsonObj.DocumentElement;
+        html_text = "<html><head><title>JSON Parse Result</title></head><body>";
+        html_text += "<table border='2'>";
+
+        var header = jsonObj.Mainline.Table.Header.Data;
+        var planes = jsonObj.Mainline.Table.Row;        //	an array of	planes
+        if(!planes) {
+            alert("No airlines!");
+            return;
+        }
+        html_text += "<tbody>";
+        html_text += "<tr>";
+
+        //	output the	headers
+
+        //var header_keys = Object.keys(header);
+        for (var i = 0; i < header.length; i++) {
+            html_text += "<th>" + header[i] + "</th>";
+        }
+        html_text += "</tr>";
+
+//	output	out	the	values
+        for (i = 0; i < planes.length; i++)	//do	for	all	planes	(one	per	row)
+        {
+            var planeNodeList = planes[i];	//get	properties	of	a	plane	(an	object)
+            html_text += "<tr>";						//start	a	new	row	of	the	output	table
+            //var aircraft_keys = Object.keys(planeNodeList);
+            for (var k = 0; k < header.length; k++) {
+                var prop = header[k];   //property
+                if (k == 5) {//handle	images	separately
+                    html_text += "<td><img src='" + planeNodeList[prop] + "' width='200 px'; height='150 px'></td>";
+                }
+                else if (k == 2) {
+                    html_text += "<td><ul>";
+                    for (var m = 0; m < planeNodeList[prop].Hub.length; m++) {
+                        if(m == 0)
+                            html_text += "<li><b>" + planeNodeList[prop].Hub[m] + "</b></li>";
+                        else html_text += "<li>" + planeNodeList[prop].Hub[m] + "</li>";
+                    }
+                    html_text += "</ul></td>"
+                }
+                else if(k == 4) {
+                    html_text += "<td><a href='" + planeNodeList[prop] + "' target='_parent'>" + planeNodeList[prop] + "</a></td>";
+                }
+                else {
+                    html_text += "<td>" + planeNodeList[prop] + "</td>";
+                }
+
+            }
+            html_text += "</tr>";
+        }
+        html_text += "</tbody>";
+        html_text += "</table>";
+        html_text += "</body></html>";
+    }
+
+
+    function viewJSON(what) {
+        var URL = what.URL.value;
+        if (URL === "") {
+            alert("filename cannot be empty!");
+            return;
+        }
+
+        function loadJSON(url) {
+            if (window.XMLHttpRequest) {//	code	for	IE7+,	Firefox,	Chrome,	Opera,	Safari
+                xmlhttp = new XMLHttpRequest();
+            } else {//	code	for	IE6,	IE5
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            xmlhttp.open("GET", url, false);
+            xmlhttp.send();
+            if(xmlhttp.status == 404) {
+                alert("No such file!");
+                return;
+            }
+            jsonObj = JSON.parse(xmlhttp.responseText);
+            return jsonObj;
+        }
+
+        jsonObj = loadJSON(URL);
+        if (window.ActiveXObject)	//if	IE,	simply	execute	script	(due	to	async prop).
+        {
+            if (jsonObj.parseError.errorCode != 0) {
+                var myErr = jsonObj.parseError;
+                generateError(jsonObj);
+                hWin = window.open("", "Error", "height=300,width=340");
+                hWin.document.write(html_text);
+            } else {
+                generateHTML(jsonObj);
+                hWin = window.open("", "Assignment4", "height=800,width=600");
+                hWin.document.write(html_text);
+            }
+        } else	//else	if	FF,	execute	script	once	JSON	object	has	loaded
+        {
+            //alert("start");
+            jsonObj.onload = generateHTML(jsonObj);
+            hWin = window.open("", "Assignment4", "height=800,width=600");
+            hWin.document.write(html_text);
+        }
+        hWin.document.close();
+    }
+</script>
+</body>
+</html>
